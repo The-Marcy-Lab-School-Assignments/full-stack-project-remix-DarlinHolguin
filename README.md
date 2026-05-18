@@ -87,7 +87,7 @@ pocket-watch/
 │ ├── index.html
 │ └── package.json
 │
-├── backend/
+├── server/
 │ ├── db/
 │ │ ├── schema.sql
 │ │ └── seed.js

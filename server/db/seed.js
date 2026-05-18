@@ -4,63 +4,53 @@ const pool = require('./pool');
 const SALT_ROUNDS = 8;
 
 const seed = async () => {
-  // Drop tables in reverse dependency order (todos references users via FK)
-  await pool.query('DROP TABLE IF EXISTS todos');
+  console.log("🌱 Seeding database...");
+
+  await pool.query('DROP TABLE IF EXISTS expenses');
   await pool.query('DROP TABLE IF EXISTS users');
 
   await pool.query(`
     CREATE TABLE users (
-      user_id       SERIAL PRIMARY KEY,
-      username      TEXT UNIQUE NOT NULL,
+      id SERIAL PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL
     )
   `);
 
   await pool.query(`
-    CREATE TABLE todos (
-      todo_id     SERIAL PRIMARY KEY,
-      title       TEXT NOT NULL,
-      is_complete BOOLEAN NOT NULL DEFAULT FALSE,
-      user_id     INT REFERENCES users(user_id) ON DELETE CASCADE
+    CREATE TABLE expenses (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      amount NUMERIC(10, 2) NOT NULL,
+      category TEXT NOT NULL,
+      note TEXT,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT NOW()
     )
   `);
 
-  // Hash passwords in parallel — bcrypt is slow by design (CPU-bound hashing)
-  const [aliceHash, bobHash] = await Promise.all([
-    bcrypt.hash('password123', SALT_ROUNDS),
-    bcrypt.hash('password123', SALT_ROUNDS),
-  ]);
-
-  // RETURNING captures inserted user_ids so we don't hardcode them
+  const hash = await bcrypt.hash('password123', SALT_ROUNDS);
   const { rows: users } = await pool.query(`
-    INSERT INTO users (username, password_hash) VALUES
-      ('alice', $1),
-      ('bob',   $2)
-    RETURNING user_id, username
-  `, [aliceHash, bobHash]);
+    INSERT INTO users (username, password_hash) 
+    VALUES ('pocket_tester', $1) 
+    RETURNING id, username
+  `, [hash]);
 
-  const [alice, bob] = users;
+  const testUser = users[0];
 
   await pool.query(`
-    INSERT INTO todos (title, is_complete, user_id) VALUES
-      ('Buy groceries',        FALSE, $1),
-      ('Walk the dog',         FALSE, $1),
-      ('Read a book',          TRUE,  $1),
-      ('Set up the database',  TRUE,  $2),
-      ('Build the API',        TRUE,  $2),
-      ('Build the frontend',   FALSE, $2)
-  `, [alice.user_id, bob.user_id]);
+    INSERT INTO expenses (title, amount, category, note, user_id) VALUES
+      ('Grocery Run', 85.50, 'groceries', 'Weekly essentials', $1),
+      ('Dinner Date', 45.00, 'restaurants', 'Taco Tuesday', $1),
+      ('Steam Sale', 29.99, 'video games', 'Elden Ring', $1)
+  `, [testUser.id]);
 
-  return users;
+  console.log(`Seeded ${testUser.username} with sample expenses!`);
 };
 
 seed()
-  .then((users) => {
-    console.log('Database seeded successfully.');
-    console.log(`  Users: ${users.map((u) => u.username).join(', ')}`);
-  })
+  .then(() => process.exit(0))
   .catch((err) => {
-    console.error('Error seeding database:', err);
+    console.error('Error seeding:', err);
     process.exit(1);
-  })
-  .finally(() => pool.end());
+  });

@@ -6,46 +6,47 @@ require('dotenv').config();
 const logRoutes = require('./middleware/logRoutes');
 const checkAuthentication = require('./middleware/checkAuthentication');
 const authControllers = require('./controllers/authControllers');
-const todoControllers = require('./controllers/todoControllers');
+const expenseControllers = require('./controllers/expenseControllers');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 // ====================================
-// Middleware
+// Middlewares
 // ====================================
-
 app.use(logRoutes);
-app.use(cookieSession({ name: 'session', secret: process.env.SESSION_SECRET }));
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.SESSION_SECRET]
+}));
 app.use(express.json());
-
-// In production, serve the built React app from frontend/dist.
-// In development, Vite's dev server handles the frontend on a separate port
-// and proxies /api requests to this server.
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // ====================================
-// Auth routes
+// Authentication Routes
 // ====================================
-
 app.post('/api/auth/register', authControllers.register);
 app.post('/api/auth/login', authControllers.login);
 app.get('/api/auth/me', authControllers.getMe);
 app.delete('/api/auth/logout', authControllers.logout);
 
 // ====================================
-// Todo routes (all require authentication)
+// Expense Routes
 // ====================================
+app.get('/api/expenses', checkAuthentication, expenseControllers.listExpenses);
+app.post('/api/expenses', checkAuthentication, expenseControllers.createExpense);
+app.delete('/api/expenses/:id', checkAuthentication, expenseControllers.deleteExpense);
 
-app.get('/api/todos', checkAuthentication, todoControllers.listTodos);
-app.post('/api/todos', checkAuthentication, todoControllers.createTodo);
-app.patch('/api/todos/:todo_id', checkAuthentication, todoControllers.updateTodo);
-app.delete('/api/todos/:todo_id', checkAuthentication, todoControllers.deleteTodo);
+// ====================================
+// Deployment - Fallback Route
+// ====================================
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // ====================================
 // Global Error Handler
 // ====================================
-
 const handleError = (err, req, res, next) => {
   console.error(err);
   res.status(500).send({ message: 'Internal Server Error' });
@@ -53,7 +54,6 @@ const handleError = (err, req, res, next) => {
 app.use(handleError);
 
 // ====================================
-// Listen
+// Server Listener
 // ====================================
-
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
