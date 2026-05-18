@@ -1,142 +1,147 @@
-# Todo App — Full-Stack Case Study
+# 🕰️ Pocket Watch
 
-A full-stack Todo app built with React, Express, and Postgres. Demonstrates session-based authentication, session rehydration, auth-dependent data fetching, and conditional rendering — the same patterns students use in their full-stack projects.
+Pocket Watch is a full-stack expense tracking application that helps users take control of their daily spending habits. By allowing creators to log expenses across a wide variety of personal categories—such as food, restaurants, hobbies, video games, and gifts—Pocket Watch provides data clarity without requiring clunky bank connections. It is a streamlined tool built for anyone looking to be intentional about every dollar they spend.
 
-## User Stories
+---
 
-**Auth**
-- A user can register for an account with a username and password
-- A user can log in to an existing account
-- A user can log out
-- A returning user who has an active session is automatically logged in when they revisit the app
+## 👥 MVP User Stories
 
-**Todos**
-- A logged-in user can see all of their todos
-- A logged-in user can create a new todo by entering a title
-- A logged-in user can mark a todo as complete or incomplete
-- A logged-in user can delete a todo
+- **Auth:** As a guest, I can register for an account with a unique username and password.
+- **Auth:** As a registered user, I can log in securely and log out of my session.
+- **Session:** As a returning user, my session automatically rehydrates when I refresh the page so I stay logged in.
+- **Read:** As a logged-in user, I can view a list of all my own logged expenses.
+- **Create:** As a logged-in user, I can add a new expense with a title, amount, category, and an optional note.
+- **Delete:** As a logged-in user, I can delete any of my own expenses, instantly updating my list.
+- **Filter:** As a logged-in user, I can filter my expenses by category to easily spot my spending patterns.
 
-## Schema
+---
 
-```
-users
-─────────────────────────────
-user_id       SERIAL PRIMARY KEY
-username      TEXT UNIQUE NOT NULL
+## 📊 Database Schema
+
+The database uses a clean one-to-many relationship where a single user can have multiple expenses assigned to them via a foreign key (user_id).
+
+```SQL
+users─────────────────────────────────────────────────────
+id SERIAL PRIMARY KEY
+username VARCHAR(50) UNIQUE NOT NULL
 password_hash TEXT NOT NULL
+created_at TIMESTAMP DEFAULT NOW()
 
-todos
-─────────────────────────────
-todo_id     SERIAL PRIMARY KEY
-title       TEXT NOT NULL
-is_complete BOOLEAN DEFAULT FALSE
-user_id     INTEGER REFERENCES users(user_id) ON DELETE CASCADE
+expenses──────────────────────────────────────────────────
+id SERIAL PRIMARY KEY
+user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
+title VARCHAR(150) NOT NULL
+amount NUMERIC(10, 2) NOT NULL
+category VARCHAR(50) NOT NULL
+note TEXT
+created_at TIMESTAMP DEFAULT NOW()
 ```
 
-A user has many todos. Deleting a user cascades to delete all of their todos.
+### 🏷️ Supported Predefined Categories
 
-## API Contract
+Expenses can be flagged with any of the following values:
+'food', 'restaurants', 'groceries', 'transport', 'hobbies', 'video games', 'gifts', 'clothing', 'subscriptions', 'other'
 
-### Auth endpoints
+---
 
-| Method | Endpoint             | Request Body             | Response                          |
-| ------ | -------------------- | ------------------------ | --------------------------------- |
-| POST   | `/api/auth/register` | `{ username, password }` | `{ user_id, username }`           |
-| POST   | `/api/auth/login`    | `{ username, password }` | `{ user_id, username }`           |
-| DELETE | `/api/auth/logout`   | —                        | `{ message }`                     |
-| GET    | `/api/auth/me`       | —                        | `{ user_id, username }` or `null` |
+## 📑 API Contract
 
-### Todo endpoints (all require authentication)
+### Auth Endpoints
 
-| Method | Endpoint              | Request Body      | Response                                     |
-| ------ | --------------------- | ----------------- | -------------------------------------------- |
-| GET    | `/api/todos`          | —                 | `[{ todo_id, title, is_complete, user_id }]` |
-| POST   | `/api/todos`          | `{ title }`       | `{ todo_id, title, is_complete, user_id }`   |
-| PATCH  | `/api/todos/:todo_id` | `{ is_complete }` | `{ todo_id, title, is_complete, user_id }`   |
-| DELETE | `/api/todos/:todo_id` | —                 | `{ todo_id, title, is_complete, user_id }`   |
+| Method | Endpoint           | Request Body               | Response                                 |
+| :----- | :----------------- | :------------------------- | :--------------------------------------- |
+| POST   | /api/auth/register | { "username", "password" } | { "id", "username" }                     |
+| POST   | /api/auth/login    | { "username", "password" } | { "id", "username" }                     |
+| DELETE | /api/auth/logout   | —                          | { "message": "Logged out successfully" } |
+| GET    | /api/auth/me       | —                          | { "id", "username" } or null             |
 
-## Setup
+### Expense Endpoints (All require authentication)
 
-### 1. Database
+| Method | Endpoint          | Request Body                              | Response                                                     |
+| :----- | :---------------- | :---------------------------------------- | :----------------------------------------------------------- |
+| GET    | /api/expenses     | —                                         | [{ "id", "title", "amount", "category", "note", "user_id" }] |
+| POST   | /api/expenses     | { "title", "amount", "category", "note" } | { "id", "title", "amount", "category", "note", "user_id" }   |
+| DELETE | /api/expenses/:id | —                                         | { "message": "Expense deleted successfully" }                |
 
-Create a local Postgres database:
+---
 
-```sh
-createdb todos_casestudy
+```
+## 📂 Application Structure
+
+pocket-watch/
+├── frontend/
+│ ├── src/
+│ │ ├── adapters/
+│ │ │ ├── auth-adapters.js
+│ │ │ └── expense-adapters.js
+│ │ ├── components/
+│ │ │ ├── Navbar.jsx
+│ │ │ ├── ExpenseList.jsx
+│ │ │ ├── ExpenseItem.jsx
+│ │ │ └── AddExpenseForm.jsx
+│ │ ├── pages/
+│ │ │ ├── AuthPage.jsx
+│ │ │ └── DashboardPage.jsx
+│ │ ├── App.jsx
+│ │ └── main.jsx
+│ ├── index.html
+│ └── package.json
+│
+├── backend/
+│ ├── db/
+│ │ ├── schema.sql
+│ │ └── seed.js
+│ ├── middleware/
+│ │ ├── checkAuthentication.js
+│ │ └── logRoutes.js
+│ ├── models/
+│ │ ├── userModel.js
+│ │ └── expenseModel.js
+│ ├── controllers/
+│ │ ├── authControllers.js
+│ │ └── expenseControllers.js
+│ ├── app.js
+│ └── package.json
+│
+└── README.md
 ```
 
-### 2. Server
+---
 
-```sh
-cd server
+## ⚙️ Setup Instructions
+
+### 1. Environment Variables
+
+In the backend/ directory, create a .env file based on the provided .env.template:
+PORT=8000
+PGURI=postgres://username:password@localhost:5432/pocket_watch
+SESSION_SECRET=your_super_secret_session_key
+NODE_ENV=development
+
+### 2. Database Initialization
+
+Ensure PostgreSQL is running locally, then initialize and seed your tables by running the seed script from the backend:
+cd backend
 npm install
-cp .env.template .env
-```
+npm run seed
 
-Open `.env` and fill in your Postgres credentials and a session secret. Then seed the database:
+### 3. Running the Backend Server
 
-```sh
-npm run db:seed
-```
-
-Start the server:
-
-```sh
+Start the Express API development server:
 npm run dev
-```
 
-The server runs on `http://localhost:8080`.
+### 4. Running the Frontend Server
 
-### 3. Frontend
-
-In a second terminal:
-
-```sh
+Open a new terminal window, navigate to the frontend directory, install dependencies, and start Vite:
 cd frontend
 npm install
 npm run dev
-```
 
-The frontend runs on `http://localhost:5173`. The Vite dev proxy forwards all `/api` requests to the Express server so session cookies work correctly.
+---
 
-## Seed Users
+## 🗺️ Roadmap (Stretch Features)
 
-After running `npm run db:seed`, these accounts are available:
-
-| Username | Password    |
-| -------- | ----------- |
-| alice    | password123 |
-| bob      | password123 |
-
-## Application Structure
-
-```
-swe-casestudy-7-todo-app/
-├── frontend/               # React app (Vite)
-│   ├── src/
-│   │   ├── App.jsx         # Root component: currentUser state, session rehydration, auth handlers
-│   │   ├── adapters/
-│   │   │   ├── auth-adapters.js  # Fetch adapters for /api/auth/* endpoints
-│   │   │   └── todo-adapters.js  # Fetch adapters for /api/todos/* endpoints
-│   │   └── components/
-│   │       ├── AuthPage.jsx    # Login + Register forms (shown when logged out)
-│   │       ├── TodoPage.jsx    # Main app container (shown when logged in)
-│   │       ├── AddTodoForm.jsx # Form to create a new todo
-│   │       ├── TodoList.jsx    # Renders a list of TodoItems
-│   │       └── TodoItem.jsx    # Single todo: checkbox, title, delete button
-│   └── vite.config.js      # Proxies /api requests to Express in development
-└── server/                 # Express + Postgres API
-    ├── index.js            # App entry point, route definitions
-    ├── controllers/
-    │   ├── authControllers.js  # register, login, logout, getMe
-    │   └── todoControllers.js  # list, create, update, delete todos
-    ├── models/
-    │   ├── userModel.js    # SQL queries for the users table
-    │   └── todoModel.js    # SQL queries for the todos table
-    ├── middleware/
-    │   ├── checkAuthentication.js  # Blocks unauthenticated requests
-    │   └── logRoutes.js            # Logs each incoming request
-    └── db/
-        ├── pool.js         # Postgres connection pool
-        └── seed.js         # Creates tables and inserts sample data
-```
+- 🔄 Edit Expense (Bonus Target): Add a PATCH /api/expenses/:id endpoint alongside an inline edit form on the frontend to modify mistakes.
+- 🎯 Savings Goals: Introduce a goals feature where users can target a specific item (e.g., "Save $500 for a PS5") and track progress.
+- 📊 Spending Summaries: Integrate a frontend data visualization library (like Chart.js or Recharts) to render total spending dynamically by category.
+- 📅 Monthly Breakdown: Enable global date filters to let users look through previous months of log history.
