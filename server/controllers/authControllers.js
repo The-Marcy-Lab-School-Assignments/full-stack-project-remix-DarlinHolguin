@@ -13,7 +13,7 @@ module.exports.register = async (req, res, next) => {
     }
 
     const user = await userModel.create(username, password);
-    req.session.user_id = user.user_id;
+    req.session.user_id = user.id;
     res.status(201).send(user);
   } catch (err) {
     next(err);
@@ -25,7 +25,7 @@ module.exports.login = async (req, res, next) => {
     const { username, password } = req.body;
     const user = await userModel.validatePassword(username, password);
     if (!user) return res.status(401).send({ error: 'Invalid credentials.' });
-    req.session.user_id = user.user_id;
+    req.session.user_id = user.id;
     res.send(user);
   } catch (err) {
     next(err);
@@ -38,7 +38,7 @@ module.exports.login = async (req, res, next) => {
 module.exports.getMe = async (req, res, next) => {
   try {
     if (!req.session.user_id) return res.json(null);
-    const user = await userModel.find(req.session.user_id);
+    const user = await userModel.findById(req.session.user_id);
     res.json(user);
   } catch (err) {
     next(err);
