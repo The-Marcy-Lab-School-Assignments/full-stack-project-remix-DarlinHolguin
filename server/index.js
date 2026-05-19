@@ -12,18 +12,15 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // ====================================
-// Middlewares
+// Middleware
 // ====================================
 app.use(logRoutes);
-app.use(cookieSession({
-  name: 'session',
-  keys: [process.env.SESSION_SECRET]
-}));
+app.use(cookieSession({ name: 'session', keys: [process.env.SESSION_SECRET] }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // ====================================
-// Authentication Routes
+// Auth Routes
 // ====================================
 app.post('/api/auth/register', authControllers.register);
 app.post('/api/auth/login', authControllers.login);
@@ -38,13 +35,6 @@ app.post('/api/expenses', checkAuthentication, expenseControllers.createExpense)
 app.delete('/api/expenses/:id', checkAuthentication, expenseControllers.deleteExpense);
 
 // ====================================
-// Deployment - Fallback Route
-// ====================================
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
-
-// ====================================
 // Global Error Handler
 // ====================================
 const handleError = (err, req, res, next) => {
@@ -54,6 +44,6 @@ const handleError = (err, req, res, next) => {
 app.use(handleError);
 
 // ====================================
-// Server Listener
+// Listen
 // ====================================
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
