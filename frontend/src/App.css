@@ -1,3 +1,23 @@
+:root {
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #111111;
+  --bg-card: #1a1a1a;
+  --bg-nav: #161616;
+  --border: #2a2a2a;
+  --border-input: #333333;
+  --purple: #a78bfa;
+  --purple-btn: #7c3aed;
+  --purple-btn-hover: #6d28d9;
+  --purple-glow: #2a1f4a;
+  --text-primary: #e8e8e8;
+  --text-muted: #888888;
+  --text-dim: #666666;
+  --text-dimmer: #555555;
+  --red: #f87171;
+  --red-bg: #2a1f1f;
+  --red-border: #4a2222;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,20 +26,22 @@
 
 body {
   font-family: system-ui, sans-serif;
-  background: #f5f5f5;
-  color: #1a1a1a;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 main {
-  max-width: 600px;
+  max-width: 700px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
 
 h1 {
   font-size: 1.75rem;
+  font-weight: 500;
+  color: var(--purple);
   margin-bottom: 1.5rem;
-  color: #1d4ed8;
+  letter-spacing: 0.5px;
 }
 
 /* Auth forms */
@@ -29,41 +51,54 @@ h1 {
 }
 
 form {
-  background: white;
+  background: var(--bg-card);
   padding: 1.5rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 0.5px solid var(--border);
   flex: 1;
 }
 
 form h2 {
   margin-bottom: 1rem;
   font-size: 1.1rem;
-  color: #374151;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
-form input {
+form input,
+form select {
   display: block;
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   margin-bottom: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  background: var(--bg-secondary);
+  border: 0.5px solid var(--border-input);
+  border-radius: 6px;
   font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+form select option {
+  background: var(--bg-card);
 }
 
 form button[type='submit'] {
-  background: #1d4ed8;
+  background: var(--purple-btn);
   color: white;
   border: none;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
+  width: 100%;
+}
+
+form button[type='submit']:hover {
+  background: var(--purple-btn-hover);
 }
 
 .error {
-  color: #dc2626;
+  color: var(--red);
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
 }
@@ -79,107 +114,144 @@ section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: white;
+  background: var(--bg-nav);
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 0.5px solid var(--border);
+}
+
+#user-controls span {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+#user-controls strong {
+  color: var(--purple);
 }
 
 #user-controls button {
-  background: #dc2626;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border: 0.5px solid var(--border-input);
   padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
 }
 
-/* Add todo form */
-#add-todo-form {
-  display: flex;
-  gap: 0.5rem;
-  background: white;
-  padding: 1rem;
+#user-controls button:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Add expense form */
+#add-expense-form {
+  background: var(--bg-card);
+  padding: 1.25rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  flex-direction: column;
+  border: 0.5px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
-#add-todo-form label {
-  font-size: 0.9rem;
-  color: #374151;
-  display: none;
-}
-
-#add-todo-form input {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+#add-expense-form input,
+#add-expense-form select {
+  background: var(--bg-secondary);
+  border: 0.5px solid var(--border-input);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
   font-size: 0.95rem;
+  color: var(--text-primary);
+  width: 100%;
   margin-bottom: 0;
 }
 
-#add-todo-form button {
-  background: #1d4ed8;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
+#add-expense-form select option {
+  background: var(--bg-card);
 }
 
-/* Todo list */
-#todo-list {
+#add-expense-form button {
+  grid-column: 1 / -1;
+  background: var(--purple-btn);
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+#add-expense-form button:hover {
+  background: var(--purple-btn-hover);
+}
+
+/* Expense list */
+#expense-list {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.todo-item {
-  background: white;
-  border: 1px solid #e5e7eb;
+.expense-item {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
   border-radius: 8px;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
 }
 
-.todo-item input[type='checkbox'] {
-  width: 1rem;
-  height: 1rem;
-  cursor: pointer;
-  flex-shrink: 0;
+.expense-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.todo-item span {
-  flex: 1;
+.expense-title {
   font-size: 0.95rem;
+  color: var(--text-primary);
 }
 
-.todo-item span.completed {
-  text-decoration: line-through;
-  color: #9ca3af;
+.expense-category {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: capitalize;
+}
+
+.expense-note {
+  font-size: 0.8rem;
+  color: var(--text-dimmer);
+  font-style: italic;
+}
+
+.expense-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.expense-amount {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--purple);
 }
 
 .delete-btn {
-  background: #dc2626;
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--text-dimmer);
+  border: 0.5px solid var(--border-input);
   padding: 0.3rem 0.6rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
-  flex-shrink: 0;
 }
 
-@media (min-width: 480px) {
-  #add-todo-form {
-    flex-direction: row;
-    align-items: flex-end;
-  }
+.delete-btn:hover {
+  background: var(--red-bg);
+  color: var(--red);
+  border-color: var(--red-border);
 }
